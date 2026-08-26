@@ -41,10 +41,10 @@ module "data_aurora" {
   source = "./modules/data-aurora"
 
   project_name             = var.project_name
-  environment               = var.environment
-  vpc_id                    = module.network.vpc_id
-  private_subnet_ids        = module.network.private_subnet_ids
-  lambda_security_group_id  = module.network.lambda_security_group_id
+  environment              = var.environment
+  vpc_id                   = module.network.vpc_id
+  private_subnet_ids       = module.network.private_subnet_ids
+  lambda_security_group_id = module.network.lambda_security_group_id
 }
 
 module "storage" {
@@ -68,7 +68,7 @@ module "cognito" {
   project_name = var.project_name
   environment  = var.environment
 }
-
+/*
 module "compute" {
   source = "./modules/compute"
 
@@ -149,3 +149,4 @@ module "cicd" {
   environment  = var.environment
   github_repo  = var.github_repo
 }
+*/

@@ -44,6 +44,7 @@ resource "tls_cert_request" "server" {
     common_name  = "${var.project_name}-vpn-server-${var.environment}"
     organization = var.project_name
   }
+  dns_names = ["${var.project_name}-vpn-server-${var.environment}.internal"]
 }
 
 resource "tls_locally_signed_cert" "server" {

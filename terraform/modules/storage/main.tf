@@ -9,7 +9,7 @@ terraform {
 
 resource "aws_s3_bucket" "documents" {
   bucket = "${var.project_name}-documents-${var.environment}"
-
+   
   tags = {
     Name = "${var.project_name}-documents-${var.environment}"
   }
@@ -47,6 +47,8 @@ resource "aws_s3_bucket_public_access_block" "documents" {
 # (PUT desde el browser), no a través de un Lambda/API Gateway.
 resource "aws_s3_bucket_cors_configuration" "documents" {
   bucket = aws_s3_bucket.documents.id
+  depends_on = [aws_s3_bucket_public_access_block.documents]
+
 
   cors_rule {
     allowed_methods = ["PUT", "GET"]

@@ -18,7 +18,7 @@ resource "aws_db_subnet_group" "main" {
 
 resource "aws_security_group" "aurora" {
   name        = "${var.project_name}-aurora-sg-${var.environment}"
-  description = "Security Group de Aurora — solo acepta 5432 desde las Lambdas"
+  description = "Security Group de Aurora - solo acepta 5432 desde las Lambdas"
   vpc_id      = var.vpc_id
 
   ingress {

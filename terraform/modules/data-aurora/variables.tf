@@ -36,9 +36,9 @@ variable "master_username" {
 }
 
 variable "engine_version" {
-  description = "Versión de Aurora PostgreSQL — 15.4+ soporta pgvector nativamente"
+  description = "Versión de Aurora PostgreSQL — 15.17+ soporta pgvector nativamente"
   type        = string
-  default     = "15.4"
+  default     = "15.17"
 }
 
 variable "min_capacity" {
