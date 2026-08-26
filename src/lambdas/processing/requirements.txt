@@ -1,0 +1,5 @@
+# boto3 no se incluye — ya viene en el runtime de Lambda.
+# Se agregan acá las libs de extracción nativa cuando se implemente esa parte:
+# pdfplumber
+# python-docx
+# openpyxl

@@ -1,0 +1,53 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!terraform.tfvars.example
+crash.log
+crash.*.log
+.terraform.lock.hcl
+*.tfplan
+
+# Terraform - archivos de build de Lambda (archive_file)
+**/.build/
+
+# Certificados y claves generadas (Client VPN, ACM)
+*.pem
+*.key
+*.crt
+*.csr
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+venv/
+.venv/
+env/
+
+# AWS / credenciales
+.aws/
+*.pem
+credentials
+config
+
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Node (si el frontend usa npm/yarn más adelante)
+node_modules/
+dist/
+build/
+.env
+.env.local
