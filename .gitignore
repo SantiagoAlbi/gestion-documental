@@ -51,3 +51,13 @@ dist/
 build/
 .env
 .env.local
+
+# Easy-RSA PKI (certificados y llaves privadas)
+easy-rsa/pki/
+easy-rsa/*.log
+*.easy-rsa
+
+*.txt
+
+*.tfvars
+!*.tfvars.example
