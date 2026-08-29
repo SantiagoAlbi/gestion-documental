@@ -9,6 +9,8 @@ crash.log
 crash.*.log
 .terraform.lock.hcl
 *.tfplan
+!*.tfvars.example
+
 
 # Terraform - archivos de build de Lambda (archive_file)
 **/.build/
@@ -59,5 +61,3 @@ easy-rsa/*.log
 
 *.txt
 
-*.tfvars
-!*.tfvars.example
