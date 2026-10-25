@@ -10,7 +10,9 @@ resource "aws_api_gateway_deployment" "main" {
       aws_api_gateway_resource.query.id,
       aws_api_gateway_method.query_post.id,
       aws_api_gateway_integration.query_post.id,
-      aws_api_gateway_rest_api_policy.main.policy,
+     # aws_api_gateway_rest_api_policy.main.policy,
+      var.allowed_office_ips,
+      var.execute_api_vpc_endpoint_id,          #new mods
     ]))
   }
 
