@@ -145,6 +145,17 @@ resource "aws_security_group" "lambda" {
   vpc_id      = aws_vpc.main.id
 
   egress {
+    description     = "HTTPS a S3 y DynamoDB via gateway endpoints (prefix lists)"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    prefix_list_ids = [
+      aws_vpc_endpoint.s3.prefix_list_id,
+      aws_vpc_endpoint.dynamodb.prefix_list_id,
+    ]
+  }
+
+  egress {
     description = "Salida HTTPS hacia VPC Endpoints y Aurora"
     from_port   = 0
     to_port     = 0

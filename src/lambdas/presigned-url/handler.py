@@ -21,13 +21,28 @@ import logging
 import os
 import uuid
 from datetime import datetime, timezone
-
 import boto3
+from botocore.config import Config
+
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-s3_client = boto3.client("s3")
+#s3_client = boto3.client("s3")
+s3_client = boto3.client(
+    "s3",
+    region_name=os.environ["AWS_REGION"],
+    config=Config(signature_version="s3v4", s3={"addressing_style": "virtual"}),
+)
+
+CONTENT_TYPES = {
+    "pdf": "application/pdf",
+    "png": "image/png",
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "tiff": "image/tiff",
+    "tif": "image/tiff",
+}
 dynamodb = boto3.resource("dynamodb")
 
 DOCUMENTS_BUCKET = os.environ["DOCUMENTS_BUCKET"]
@@ -97,9 +112,16 @@ def lambda_handler(event, context):
         }
     )
 
+ #   presigned_url = s3_client.generate_presigned_url(
+  #      ClientMethod="put_object",
+   #     Params={"Bucket": DOCUMENTS_BUCKET, "Key": object_key},
+    #    ExpiresIn=URL_EXPIRATION_SECONDS,
+   # )
+    content_type = CONTENT_TYPES.get(file_type, "application/octet-stream")
+
     presigned_url = s3_client.generate_presigned_url(
         ClientMethod="put_object",
-        Params={"Bucket": DOCUMENTS_BUCKET, "Key": object_key},
+        Params={"Bucket": DOCUMENTS_BUCKET, "Key": object_key, "ContentType": content_type},
         ExpiresIn=URL_EXPIRATION_SECONDS,
     )
 
