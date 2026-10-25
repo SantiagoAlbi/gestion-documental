@@ -66,9 +66,9 @@ module "queue" {
 }
 
 module "cognito" {
-  source       = "./modules/cognito"
-  project_name = var.project_name
-  environment  = var.environment
+  source            = "./modules/cognito"
+  project_name      = var.project_name
+  environment       = var.environment
   mfa_configuration = var.mfa_configuration
 
   groups = [
