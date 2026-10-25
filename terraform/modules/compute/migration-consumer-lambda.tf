@@ -1,9 +1,11 @@
+/*
 variable "migration_reserved_concurrency" {
   description = "Concurrencia máxima de la Lambda consumidora — evita saturar Textract/Bedrock con miles de invocaciones simultáneas durante una migración masiva"
   type        = number
   default     = 5
+  nullable    = true
 }
-
+*/
 # Reutiliza el mismo código que `processing` — la lógica de negocio es
 # idéntica (determinar processing_path, disparar OCR o extracción nativa).
 # Lo único que cambia es el trigger (SQS en vez de S3 directo) y el límite
@@ -30,10 +32,12 @@ resource "aws_lambda_function" "migration_consumer" {
     variables = {
       DOCUMENTS_METADATA_TABLE = var.documents_metadata_table_name
       AUDIT_LOG_TABLE          = var.audit_log_table_name
-      AURORA_ENDPOINT          = var.aurora_cluster_endpoint
+      AURORA_CLUSTER_ARN       = var.aurora_cluster_arn
       AURORA_DATABASE          = var.aurora_database_name
       AURORA_SECRET_ARN        = var.aurora_master_user_secret_arn
       ENVIRONMENT              = var.environment
+      TEXTRACT_SNS_TOPIC_ARN   = aws_sns_topic.textract_completion.arn
+      TEXTRACT_ROLE_ARN        = aws_iam_role.textract_service.arn
     }
   }
 
@@ -43,9 +47,9 @@ resource "aws_lambda_function" "migration_consumer" {
 }
 
 resource "aws_lambda_event_source_mapping" "migration_queue" {
-  event_source_arn                  = var.migration_queue_arn
-  function_name                     = aws_lambda_function.migration_consumer.arn
-  batch_size                        = 1 # un documento por invocación, más fácil de trackear/reintentar
+  event_source_arn                   = var.migration_queue_arn
+  function_name                      = aws_lambda_function.migration_consumer.arn
+  batch_size                         = 1 # un documento por invocación, más fácil de trackear/reintentar
   maximum_batching_window_in_seconds = 0
 }
 

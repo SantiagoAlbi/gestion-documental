@@ -54,8 +54,13 @@ variable "rbac_permissions_table_arn" {
 }
 
 # --- Aurora (módulo data-aurora) ---
-variable "aurora_cluster_endpoint" {
-  type = string
+#variable "aurora_cluster_endpoint" {
+# type = string
+#}
+
+variable "aurora_cluster_arn" {
+  description = "ARN del cluster Aurora — lo usa la RDS Data API"
+  type        = string
 }
 
 variable "aurora_database_name" {
@@ -126,11 +131,25 @@ variable "presigned_url_expiration_seconds" {
 variable "bedrock_text_model_id" {
   description = "Modelo de Bedrock usado para generar la respuesta a partir del contexto recuperado"
   type        = string
-  default     = "anthropic.claude-3-5-sonnet-20241022-v2:0"
+  default     = "us.anthropic.claude-haiku-5-5"
 }
 
 variable "lambda_timeout_query" {
   description = "Timeout de la Lambda de consulta — incluye embedding + pgvector + invocación a Bedrock"
   type        = number
   default     = 30
+}
+
+# - - - Compute - - - #
+variable "lambda_source_dir" {
+  description = "Carpeta con el código Python de las Lambdas — todavía no existe, crearla antes de terraform apply"
+  type        = string
+  default     = "../../../src/lambdas"
+}
+
+variable "migration_reserved_concurrency" {
+  description = "Concurrencia reservada para la Lambda de migración — null si la cuenta no tiene margen (cuentas nuevas en us-east-1 suelen tener límite total de 10)"
+  type        = number
+  default     = 5
+  nullable    = true
 }

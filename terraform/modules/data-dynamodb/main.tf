@@ -158,3 +158,15 @@ resource "aws_dynamodb_table" "rbac_permissions" {
     Name = "${var.project_name}-rbac-permissions-${var.environment}"
   }
 }
+
+resource "aws_dynamodb_table_item" "rbac" {
+  for_each = var.rbac_permissions
+
+  table_name = aws_dynamodb_table.rbac_permissions.name
+  hash_key   = aws_dynamodb_table.rbac_permissions.hash_key
+
+  item = jsonencode({
+    role               = { S = each.key }
+    allowed_categories = { L = [for c in each.value : { S = c }] }
+  })
+}

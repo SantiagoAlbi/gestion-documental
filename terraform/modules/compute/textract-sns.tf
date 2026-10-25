@@ -63,8 +63,9 @@ resource "aws_lambda_function" "textract_callback" {
   role          = aws_iam_role.lambda_processing.arn # mismos permisos que processing (Aurora, DynamoDB, Bedrock)
   handler       = "handler.lambda_handler"
   runtime       = var.lambda_runtime
-  timeout       = 120 # Textract puede devolver documentos largos, más chunking + embeddings
-  memory_size   = 512
+  #timeout       = 120 # Textract puede devolver documentos largos, más chunking + embeddings
+  timeout     = 300 # OCR + chunking + un embedding por chunk + inserts en Aurora
+  memory_size = 512
 
   filename         = data.archive_file.textract_callback.output_path
   source_code_hash = data.archive_file.textract_callback.output_base64sha256
@@ -78,7 +79,7 @@ resource "aws_lambda_function" "textract_callback" {
     variables = {
       DOCUMENTS_METADATA_TABLE = var.documents_metadata_table_name
       AUDIT_LOG_TABLE          = var.audit_log_table_name
-      AURORA_ENDPOINT          = var.aurora_cluster_endpoint
+      AURORA_CLUSTER_ARN       = var.aurora_cluster_arn
       AURORA_DATABASE          = var.aurora_database_name
       AURORA_SECRET_ARN        = var.aurora_master_user_secret_arn
       ENVIRONMENT              = var.environment

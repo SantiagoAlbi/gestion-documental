@@ -48,5 +48,5 @@ resource "aws_ec2_client_vpn_authorization_rule" "vpc_access" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.main.id
   target_network_cidr    = var.vpc_cidr
   authorize_all_groups   = true
-  description             = "Autoriza a todo cliente autenticado (posee certificado propio, firmado por la CA) a llegar a la VPC"
+  description            = "Autoriza a todo cliente autenticado (posee certificado propio, firmado por la CA) a llegar a la VPC"
 }

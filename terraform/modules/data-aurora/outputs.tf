@@ -27,3 +27,8 @@ output "cluster_id" {
   description = "ID del cluster — útil para el script de migración de schema (CREATE EXTENSION vector, tablas)"
   value       = aws_rds_cluster.main.cluster_identifier
 }
+
+output "cluster_arn" {
+  description = "ARN del cluster — lo usa la RDS Data API (Lambdas y script de esquema)"
+  value       = aws_rds_cluster.main.arn
+}

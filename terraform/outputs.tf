@@ -1,9 +1,9 @@
-/*
+
 output "api_invoke_url" {
   description = "URL del API (accesible solo desde IPs de oficina o vía el VPC Endpoint)"
   value       = module.api.invoke_url
 }
-*/
+
 output "cognito_user_pool_id" {
   value = module.cognito.user_pool_id
 }

@@ -35,6 +35,9 @@ module "data_dynamodb" {
 
   project_name = var.project_name
   environment  = var.environment
+
+  rbac_permissions = { for name, r in var.roles : name => r.allowed_categories } #new mod
+
 }
 
 module "data_aurora" {
@@ -63,23 +66,33 @@ module "queue" {
 }
 
 module "cognito" {
-  source = "./modules/cognito"
-
+  source       = "./modules/cognito"
   project_name = var.project_name
   environment  = var.environment
+  mfa_configuration = var.mfa_configuration
+
+  groups = [
+    for name, r in var.roles : {
+      name        = name
+      description = r.description
+      precedence  = r.precedence
+    }
+  ]
 }
-/*
+
 module "compute" {
   source = "./modules/compute"
 
-  project_name = var.project_name
-  environment  = var.environment
+  lambda_source_dir              = "${path.root}/../src/lambdas"
+  project_name                   = var.project_name
+  environment                    = var.environment
+  migration_reserved_concurrency = var.migration_reserved_concurrency
 
   # network
-  private_subnet_ids        = module.network.private_subnet_ids
-  lambda_security_group_id  = module.network.lambda_security_group_id
-  client_vpn_endpoint_id     = module.network.client_vpn_endpoint_id
-  vpn_private_subnet_ids     = module.network.private_subnet_ids
+  private_subnet_ids       = module.network.private_subnet_ids
+  lambda_security_group_id = module.network.lambda_security_group_id
+  client_vpn_endpoint_id   = module.network.client_vpn_endpoint_id
+  vpn_private_subnet_ids   = module.network.private_subnet_ids
 
   # storage
   documents_bucket_name = module.storage.bucket_id
@@ -94,7 +107,8 @@ module "compute" {
   rbac_permissions_table_arn    = module.data_dynamodb.rbac_permissions_table_arn
 
   # data-aurora
-  aurora_cluster_endpoint       = module.data_aurora.cluster_endpoint
+  #aurora_cluster_endpoint       = module.data_aurora.cluster_endpoint
+  aurora_cluster_arn            = module.data_aurora.cluster_arn #new mo
   aurora_database_name          = module.data_aurora.database_name
   aurora_master_user_secret_arn = module.data_aurora.master_user_secret_arn
 
@@ -119,7 +133,7 @@ module "api" {
   execute_api_vpc_endpoint_id = module.network.execute_api_vpc_endpoint_id
   allowed_office_ips          = var.allowed_office_ips
 }
-
+/*
 module "monitoring" {
   source = "./modules/monitoring"
 

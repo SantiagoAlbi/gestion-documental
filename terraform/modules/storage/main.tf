@@ -9,7 +9,7 @@ terraform {
 
 resource "aws_s3_bucket" "documents" {
   bucket = "${var.project_name}-documents-${var.environment}"
-   
+
   tags = {
     Name = "${var.project_name}-documents-${var.environment}"
   }
@@ -46,7 +46,7 @@ resource "aws_s3_bucket_public_access_block" "documents" {
 # CORS — necesario porque el frontend sube directo a S3 con presigned URL
 # (PUT desde el browser), no a través de un Lambda/API Gateway.
 resource "aws_s3_bucket_cors_configuration" "documents" {
-  bucket = aws_s3_bucket.documents.id
+  bucket     = aws_s3_bucket.documents.id
   depends_on = [aws_s3_bucket_public_access_block.documents]
 
 
@@ -94,7 +94,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "documents" {
     id     = "cleanup-noncurrent-versions"
     status = "Enabled"
 
-    filter {}   # <- agregar esta línea
+    filter {} # <- agregar esta línea
 
     noncurrent_version_expiration {
       noncurrent_days = 90

@@ -1,5 +1,6 @@
 resource "aws_bedrock_guardrail" "main" {
   name                      = "${var.project_name}-guardrail-${var.environment}"
+  description               = "Guardrail de contenido para gestion documental - capa 2 (Bedrock)"
   blocked_input_messaging   = "No puedo procesar esa consulta."
   blocked_outputs_messaging = "No puedo compartir esa información por políticas de privacidad."
 

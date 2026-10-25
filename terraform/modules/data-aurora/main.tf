@@ -52,6 +52,7 @@ resource "aws_rds_cluster" "main" {
   # RDS genera, guarda y rota automáticamente el password en Secrets Manager.
   # No hay ningún secret hardcodeado ni gestionado a mano.
   manage_master_user_password = true
+  enable_http_endpoint        = true # RDS Data API: SQL por HTTPS + IAM, sin driver ni conexión persistente / new mod
 
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.aurora.id]
@@ -84,5 +85,25 @@ resource "aws_rds_cluster_instance" "main" {
 
   tags = {
     Name = "${var.project_name}-aurora-instance-${count.index}-${var.environment}"
+  }
+}
+
+# Esquema de pgvector (extensión, tabla document_chunks, índices).
+# Se re-ejecuta solo si cambia el script o se recrea el cluster.  new mod
+resource "terraform_data" "schema" {
+  triggers_replace = [
+    filesha256("${path.module}/scripts/init-schema.sh"),
+    aws_rds_cluster.main.arn,
+  ]
+
+  depends_on = [aws_rds_cluster_instance.main]
+
+  provisioner "local-exec" {
+    command = "bash ${path.module}/scripts/init-schema.sh"
+    environment = {
+      CLUSTER_ARN = aws_rds_cluster.main.arn
+      SECRET_ARN  = aws_rds_cluster.main.master_user_secret[0].secret_arn
+      DATABASE    = aws_rds_cluster.main.database_name
+    }
   }
 }

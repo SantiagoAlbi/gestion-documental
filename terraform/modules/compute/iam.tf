@@ -33,9 +33,9 @@ resource "aws_iam_role_policy" "lambda_processing_permissions" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "S3ReadDocuments"
-        Effect = "Allow"
-        Action = ["s3:GetObject"]
+        Sid      = "S3ReadDocuments"
+        Effect   = "Allow"
+        Action   = ["s3:GetObject"]
         Resource = "${var.documents_bucket_arn}/*"
       },
       {
@@ -54,10 +54,18 @@ resource "aws_iam_role_policy" "lambda_processing_permissions" {
         Resource = var.audit_log_table_arn
       },
       {
-        Sid      = "SecretsManagerAuroraCreds"
-        Effect   = "Allow"
-        Action   = ["secretsmanager:GetSecretValue"]
+        Sid    = "SecretsManagerAuroraCreds"
+        Effect = "Allow"
+        Action = ["secretsmanager:GetSecretValue"]
+
         Resource = var.aurora_master_user_secret_arn
+
+      },
+      {
+        Sid      = "RDSDataAPI" #new mod
+        Effect   = "Allow"
+        Action   = ["rds-data:ExecuteStatement", "rds-data:BatchExecuteStatement"]
+        Resource = var.aurora_cluster_arn
       },
       {
         Sid    = "Textract"
@@ -75,10 +83,15 @@ resource "aws_iam_role_policy" "lambda_processing_permissions" {
         Resource = "arn:aws:bedrock:${data.aws_region.current.name}::foundation-model/amazon.titan-embed-text-v2:0"
       },
       {
-        Sid      = "BedrockTextGeneration"
-        Effect   = "Allow"
-        Action   = ["bedrock:InvokeModel"]
-        Resource = "arn:aws:bedrock:${data.aws_region.current.name}::foundation-model/${var.bedrock_text_model_id}"
+        Sid    = "BedrockTextGeneration"
+        Effect = "Allow"
+        Action = ["bedrock:InvokeModel"]
+        Resource = [
+          # El inference profile (lo que invoca la Lambda)
+          "arn:aws:bedrock:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_text_model_id}",
+          # El modelo en cada región de EE.UU. a la que el perfil puede enrutar
+          "arn:aws:bedrock:*::foundation-model/${trimprefix(var.bedrock_text_model_id, "us.")}"
+        ]
       },
       {
         Sid      = "BedrockGuardrail"

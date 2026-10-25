@@ -1,9 +1,10 @@
+/*
 variable "lambda_source_dir" {
   description = "Carpeta con el código Python de las Lambdas — todavía no existe, crearla antes de terraform apply"
   type        = string
   default     = "../../src/lambdas"
 }
-
+*/
 # ---------------------------------------------------------------------------
 # NOTA: el código Python real (extracción nativa / Textract / chunking /
 # embeddings / RBAC / Bedrock) todavía no está escrito. Este bloque empaqueta
@@ -37,10 +38,12 @@ resource "aws_lambda_function" "processing" {
     variables = {
       DOCUMENTS_METADATA_TABLE = var.documents_metadata_table_name
       AUDIT_LOG_TABLE          = var.audit_log_table_name
-      AURORA_ENDPOINT          = var.aurora_cluster_endpoint
+      AURORA_CLUSTER_ARN       = var.aurora_cluster_arn
       AURORA_DATABASE          = var.aurora_database_name
       AURORA_SECRET_ARN        = var.aurora_master_user_secret_arn
       ENVIRONMENT              = var.environment
+      TEXTRACT_SNS_TOPIC_ARN   = aws_sns_topic.textract_completion.arn #new mod
+      TEXTRACT_ROLE_ARN        = aws_iam_role.textract_service.arn     #new mode
     }
   }
 
@@ -61,3 +64,4 @@ resource "aws_cloudwatch_log_group" "processing" {
   name              = "/aws/lambda/${aws_lambda_function.processing.function_name}"
   retention_in_days = 30
 }
+

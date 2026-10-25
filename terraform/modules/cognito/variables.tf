@@ -30,8 +30,8 @@ variable "groups" {
     description = string
     precedence  = number
   }))
-  default = [
-    {
+  #default = [
+  /* {
       name        = "administradores"
       description = "Módulo 1 — acceso a toda la documentación, sin restricción de categoría"
       precedence  = 1
@@ -71,5 +71,5 @@ variable "groups" {
       description = "Módulo 2 — documentos de trámites y Agenda (carnet, DNI, certificados)"
       precedence  = 10
     }
-  ]
+  ]  */
 }

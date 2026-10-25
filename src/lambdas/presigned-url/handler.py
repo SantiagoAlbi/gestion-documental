@@ -44,6 +44,11 @@ def _response(status_code: int, body: dict):
         "body": json.dumps(body),
     }
 
+def get_claims(event: dict) -> dict:
+    """REST API: authorizer.claims · HTTP API: authorizer.jwt.claims."""
+    authorizer = event.get("requestContext", {}).get("authorizer", {}) or {}
+    return authorizer.get("claims") or authorizer.get("jwt", {}).get("claims") or {}
+
 
 def lambda_handler(event, context):
     logger.info("Evento recibido: %s", json.dumps(event))
@@ -65,13 +70,13 @@ def lambda_handler(event, context):
         return _response(400, {"error": f"file_type no soportado: {file_type}"})
 
     # Claims del JWT ya validado por el Cognito Authorizer de API Gateway
-    try:
-        claims = event["requestContext"]["authorizer"]["jwt"]["claims"]
-        uploaded_by = claims["sub"]
-    except KeyError:
+    
+    uploaded_by = get_claims(event).get("sub")
+    if not uploaded_by:
         logger.error("No se encontraron claims de Cognito en el request")
         return _response(401, {"error": "No autenticado"})
 
+    
     document_id = str(uuid.uuid4())
     object_key = f"uploads/{document_id}.{file_type}"
     uploaded_at = datetime.now(timezone.utc).isoformat()

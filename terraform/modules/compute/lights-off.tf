@@ -59,7 +59,7 @@ resource "aws_lambda_function" "lights_off" {
   environment {
     variables = {
       CLIENT_VPN_ENDPOINT_ID = var.client_vpn_endpoint_id
-      SUBNET_IDS              = join(",", var.vpn_private_subnet_ids)
+      SUBNET_IDS             = join(",", var.vpn_private_subnet_ids)
     }
   }
 

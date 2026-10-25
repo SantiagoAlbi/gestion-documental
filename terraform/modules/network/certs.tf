@@ -48,7 +48,7 @@ resource "tls_cert_request" "server" {
 }
 
 resource "tls_locally_signed_cert" "server" {
-  cert_request_pem  = tls_cert_request.server.cert_request_pem
+  cert_request_pem   = tls_cert_request.server.cert_request_pem
   ca_private_key_pem = tls_private_key.ca.private_key_pem
   ca_cert_pem        = tls_self_signed_cert.ca.cert_pem
 
@@ -81,8 +81,8 @@ resource "aws_acm_certificate" "server" {
 # ---------------------------------------------------------------------------
 
 resource "aws_acm_certificate" "client_root" {
-  private_key       = tls_private_key.ca.private_key_pem
-  certificate_body  = tls_self_signed_cert.ca.cert_pem
+  private_key      = tls_private_key.ca.private_key_pem
+  certificate_body = tls_self_signed_cert.ca.cert_pem
 
   tags = {
     Name = "${var.project_name}-vpn-client-root-${var.environment}"
