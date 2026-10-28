@@ -1,16 +1,18 @@
 """
 Lambda: presigned-url
-Trigger: API Gateway (HTTP API, ruta POST /documents, con Cognito JWT Authorizer)
+Trigger: API Gateway (REST API, ruta POST /documents, con Cognito User Pool Authorizer)
 
 Responsabilidad:
-  1. Leer el body del request: category, file_type, title.
-  2. Leer el usuario autenticado desde el JWT que ya validó API Gateway
-     (sub, cognito:groups) — llega en requestContext.authorizer.jwt.claims.
+  1. Leer el body del request: category, file_type, title, department.
+  2. Leer el usuario autenticado desde los claims que ya validó API Gateway
+     (sub, cognito:groups) — llegan en requestContext.authorizer.claims.
   3. Generar document_id (UUID) y armar la key de S3.
   4. Crear el registro inicial en documents-metadata (status=pending_upload,
      uploaded_by=sub real, no "system" — cierra el gap de auditoría que
      tenía la Lambda de processing).
-  5. Generar la presigned URL de PUT y devolverla junto con el document_id.
+  5. Generar la presigned URL de PUT (SigV4, con ContentType firmado) y
+     devolverla junto con el document_id y el content_type que el cliente
+     debe enviar en el header del PUT.
 
 El evento S3 disparado por esta subida lo procesa la Lambda `processing`
 (status pending_upload -> processing -> indexed).
@@ -21,6 +23,7 @@ import logging
 import os
 import uuid
 from datetime import datetime, timezone
+
 import boto3
 from botocore.config import Config
 
@@ -28,12 +31,20 @@ from botocore.config import Config
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-#s3_client = boto3.client("s3")
+# SigV4 + virtual-hosted style: SigV2 no firma ContentType y genera
+# SignatureDoesNotMatch al hacer el PUT.
 s3_client = boto3.client(
     "s3",
     region_name=os.environ["AWS_REGION"],
     config=Config(signature_version="s3v4", s3={"addressing_style": "virtual"}),
 )
+dynamodb = boto3.resource("dynamodb")
+
+DOCUMENTS_BUCKET = os.environ["DOCUMENTS_BUCKET"]
+DOCUMENTS_METADATA_TABLE = os.environ["DOCUMENTS_METADATA_TABLE"]
+URL_EXPIRATION_SECONDS = int(os.environ["URL_EXPIRATION_SECONDS"])
+
+ALLOWED_EXTENSIONS = {"pdf", "png", "jpeg", "jpg", "tiff", "docx", "xlsx"}
 
 CONTENT_TYPES = {
     "pdf": "application/pdf",
@@ -43,13 +54,6 @@ CONTENT_TYPES = {
     "tiff": "image/tiff",
     "tif": "image/tiff",
 }
-dynamodb = boto3.resource("dynamodb")
-
-DOCUMENTS_BUCKET = os.environ["DOCUMENTS_BUCKET"]
-DOCUMENTS_METADATA_TABLE = os.environ["DOCUMENTS_METADATA_TABLE"]
-URL_EXPIRATION_SECONDS = int(os.environ["URL_EXPIRATION_SECONDS"])
-
-ALLOWED_EXTENSIONS = {"pdf", "png", "jpeg", "jpg", "tiff", "docx", "xlsx"}
 
 
 def _response(status_code: int, body: dict):
@@ -58,6 +62,7 @@ def _response(status_code: int, body: dict):
         "headers": {"Content-Type": "application/json"},
         "body": json.dumps(body),
     }
+
 
 def get_claims(event: dict) -> dict:
     """REST API: authorizer.claims · HTTP API: authorizer.jwt.claims."""
@@ -85,13 +90,11 @@ def lambda_handler(event, context):
         return _response(400, {"error": f"file_type no soportado: {file_type}"})
 
     # Claims del JWT ya validado por el Cognito Authorizer de API Gateway
-    
     uploaded_by = get_claims(event).get("sub")
     if not uploaded_by:
         logger.error("No se encontraron claims de Cognito en el request")
         return _response(401, {"error": "No autenticado"})
 
-    
     document_id = str(uuid.uuid4())
     object_key = f"uploads/{document_id}.{file_type}"
     uploaded_at = datetime.now(timezone.utc).isoformat()
@@ -112,11 +115,8 @@ def lambda_handler(event, context):
         }
     )
 
- #   presigned_url = s3_client.generate_presigned_url(
-  #      ClientMethod="put_object",
-   #     Params={"Bucket": DOCUMENTS_BUCKET, "Key": object_key},
-    #    ExpiresIn=URL_EXPIRATION_SECONDS,
-   # )
+    # El ContentType forma parte de la firma: el cliente debe mandar
+    # exactamente este valor en el header Content-Type del PUT.
     content_type = CONTENT_TYPES.get(file_type, "application/octet-stream")
 
     presigned_url = s3_client.generate_presigned_url(
@@ -131,5 +131,6 @@ def lambda_handler(event, context):
             "document_id": document_id,
             "upload_url": presigned_url,
             "expires_in": URL_EXPIRATION_SECONDS,
+            "content_type": content_type,
         },
     )
