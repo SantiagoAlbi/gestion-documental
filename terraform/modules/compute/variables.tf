@@ -131,7 +131,8 @@ variable "presigned_url_expiration_seconds" {
 variable "bedrock_text_model_id" {
   description = "Modelo de Bedrock usado para generar la respuesta a partir del contexto recuperado"
   type        = string
-  default     = "us.anthropic.claude-haiku-5-5"
+  #default     = "us.anthropic.claude-haiku-5-5"
+  default     = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
 }
 
 variable "lambda_timeout_query" {
