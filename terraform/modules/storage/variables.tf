@@ -13,3 +13,9 @@ variable "cors_allowed_origins" {
   type        = list(string)
   default     = ["*"] # ajustar al dominio real del frontend cuando exista
 }
+
+variable "force_destroy" {
+  description = "Permite destruir el bucket aunque tenga objetos. Solo true en dev."
+  type        = bool
+  default     = false
+}

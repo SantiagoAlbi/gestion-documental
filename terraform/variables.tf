@@ -106,3 +106,9 @@ variable "mfa_configuration" {
     error_message = "mfa_configuration debe ser ON, OPTIONAL u OFF."
   }
 }
+
+variable "force_destroy_buckets" {
+  description = "Permite destruir buckets con objetos (solo dev; en producción false para no perder documentos)."
+  type        = bool
+  default     = false
+}

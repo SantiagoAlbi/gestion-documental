@@ -9,7 +9,7 @@ terraform {
 
 resource "aws_s3_bucket" "documents" {
   bucket = "${var.project_name}-documents-${var.environment}"
-
+  force_destroy = var.force_destroy
   tags = {
     Name = "${var.project_name}-documents-${var.environment}"
   }
@@ -105,3 +105,4 @@ resource "aws_s3_bucket_lifecycle_configuration" "documents" {
     }
   }
 }
+

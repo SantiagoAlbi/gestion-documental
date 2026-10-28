@@ -53,8 +53,9 @@ module "data_aurora" {
 module "storage" {
   source = "./modules/storage"
 
-  project_name = var.project_name
-  environment  = var.environment
+  force_destroy = var.force_destroy_buckets
+  project_name  = var.project_name
+  environment   = var.environment
 }
 
 module "queue" {
